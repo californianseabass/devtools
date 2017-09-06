@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"> 
+        <title>WebSocket demo</title>
+    </head>
+    <body>
+        <button id="start-button">Start</button>
+            
+        </form>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+        <script>
+            var ws = new WebSocket("ws://127.0.0.1:5678/"),
+                messages = document.createElement('ul');
+            ws.onmessage = function(event) {
+                var messages = document.getElementsByTagName('ul')[0],
+                    message = document.createElement('li'),
+                    content = document.createTextNode(event.data);
+                message.appendChild(content);
+                messages.appendChild(message);
+            };
+
+            $("#start-button")[0].onclick = null;
+            $("#start-button").click(function() {
+                var start_msg = {
+                    'type': 'start'
+                }
+                ws.send( JSON.stringify(start_msg) );
+            });
+
+            document.body.appendChild(messages);
+        </script>
+    </body>
+</html>
