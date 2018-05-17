@@ -18,8 +18,10 @@ async def user_supplied_command(port):
         print("< {}".format(response))
 
 async def run_commnad(port):
+    print('conn')
     async with websockets.connect('ws://127.0.0.1:{}'.format(port)) as websocket:
-        start = json.dumps({'type': 'run'})
+        start = json.dumps({'type': 'action', 'action': 'start'})
+        print('boo')
         await websocket.send(start)
         print("> {}".format(start))
 
@@ -30,11 +32,11 @@ async def run_commnad(port):
 
 def start_server(port=5678):
     loop = asyncio.get_event_loop()
-    response = requests.post('http://localhost:5000/state', json={'simulationStatus': 'running'})
-    print(response.json())
-    loop.run_until_complete(run_commnad(port))
+    # response = requests.post('http://localhost:5000/state', json={'simulationStatus': 'running'})
+    # print(response.json())
     time.sleep(3)
     loop.run_until_complete(run_commnad(port))
+    # loop.run_until_complete(run_commnad(port))
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
