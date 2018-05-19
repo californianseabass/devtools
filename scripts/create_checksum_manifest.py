@@ -6,6 +6,22 @@ import os
 DESCRIPTION = ''
 
 
+filepath_to_md5_cache = {}
+
+
+def check_cache(cache):
+    def decorator(f):
+        def wrapper(key):
+            if key in cache.keys():
+                print('cache hit')
+                return cache[key]
+            value = f(key)
+            cache[key] = value
+            return value
+        return wrapper
+    return decorator
+
+
 def get_files(folder, recursive):
     if not recursive:
         return [
@@ -21,6 +37,7 @@ def get_files(folder, recursive):
         return result
 
 
+@check_cache(filepath_to_md5_cache)
 def get_md5_hash_for_file(filepath):
     try:
         with open(filepath, 'rb') as f:
@@ -64,9 +81,11 @@ if __name__ == '__main__':
     parser.add_argument('--folders', type=str, help='comma separated list of directories to search for duplicates', default=None)
     parser.add_argument('--recursive', '-r', action='store_true', default=False)
     parser.add_argument('--duplicates', '-d', action='store_true', help='print out duplicates instead of csv with md5 sums', default=False)
+    parser.add_argument('--cache_path', help='if set, save filepath to md5 as json for cacheing purposes. Will reuse and augment if already existent.')
     args = parser.parse_args()
 
     folders = args.folders.split(',') if args.folders else os.getcwd()
     if type(folders) == str:
         folders = [folders]
+    print(folders)
     main(folders, args.recursive, args.duplicates)
