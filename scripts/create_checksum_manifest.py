@@ -1,25 +1,37 @@
 import argparse
 import collections
 import hashlib
+import json
 import os
 
+CACHE_PATH = 'cache.json'
 DESCRIPTION = ''
 
 
 filepath_to_md5_cache = {}
+if os.path.isfile(CACHE_PATH):
+    with open(CACHE_PATH) as f:
+        filepath_to_md5_cache = json.load(f)
 
 
 def check_cache(cache):
     def decorator(f):
         def wrapper(key):
             if key in cache.keys():
-                print('cache hit')
                 return cache[key]
             value = f(key)
             cache[key] = value
             return value
         return wrapper
     return decorator
+
+
+def save_cache(fn):
+    def wrapper(*args, **kwargs):
+        fn(*args, **kwargs)
+        with open(CACHE_PATH, 'w') as f:
+            json.dump(filepath_to_md5_cache, f)
+    return wrapper
 
 
 def get_files(folder, recursive):
@@ -56,6 +68,7 @@ def print_duplicates(duplicates):
             print(f'\t{filepath}')
 
 
+@save_cache
 def main(folders, recursive, should_print_duplicates):
     files = []
     for folder in (os.path.expandvars(os.path.expanduser(folder)) for folder in folders):
@@ -87,5 +100,4 @@ if __name__ == '__main__':
     folders = args.folders.split(',') if args.folders else os.getcwd()
     if type(folders) == str:
         folders = [folders]
-    print(folders)
     main(folders, args.recursive, args.duplicates)
